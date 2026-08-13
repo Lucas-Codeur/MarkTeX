@@ -1,0 +1,50 @@
+BasedOnStyle: LLVM
+ColumnLimit: 100
+IndentWidth: 4
+AlignArrayOfStructures: Left
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 2
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterCaseLabel: false
+    AfterClass: false
+    AfterEnum: false
+    AfterFunction: false
+    AfterNamespace: false
+    AfterStruct: false
+    AfterUnion: false
+    AfterExternBlock: false
+    BeforeCatch: false
+    BeforeElse: false
+    BeforeLambdaBody: false
+    BeforeWhile: false
+
+BracedInitializerIndentWidth: 4
+BreakAdjacentStringLiterals: true
+BreakArrays: false
+BreakBeforeConceptDeclarations: Always
+BreakBeforeTemplateCloser: true
+BreakTemplateDeclarations: true
+
+FixNamespaceComments: true
+IndentWrappedFunctionNames: true
+
+IntegerLiteralSeparator:
+  Binary: 4
+  BinaryMinDigitsInsert: 7
+  Decimal: 3
+  DecimalMinDigitsInsert: 5
+  Hex: -1
+
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: false
+  AtStartOfFile: false
+
+NamespaceIndentation: Inner
+PointerAlignment: Left
