@@ -126,7 +126,6 @@ void parseBlock(Parser* parser, FILE* file) {
 
     advance(parser);
     skipSpaces(parser);
-    //printf("Character: %c.\n", peek(parser));
 
     char command[256] = {0};
 
@@ -151,6 +150,7 @@ void parseBlock(Parser* parser, FILE* file) {
     strcpy(command, word);
 
     // Parse title
+
     skipSpaces(parser);
     if(peek(parser) != '\n') {
         wordSize = 0;
@@ -171,6 +171,9 @@ void parseBlock(Parser* parser, FILE* file) {
 
     fputc('\n', file);
 
+    bool bold = false;
+    bool list = false;
+
     // Parse content
     advance(parser);
     while (!atEnd(parser)) {
@@ -178,6 +181,9 @@ void parseBlock(Parser* parser, FILE* file) {
         if(peek(parser) == '@' && peekNext(parser) == '@') {
             advance(parser);
             advance(parser);
+
+            if(bold) fprintf(file, "}");
+            if(list) fprintf(file, "\\end{itemize}\n");
 
             fprintf(file, "\\end{%s}\n", command);
 
@@ -188,6 +194,38 @@ void parseBlock(Parser* parser, FILE* file) {
             if(!atEnd(parser)) advance(parser);
 
             return;
+        }
+
+        // Bold text
+        if(peek(parser) == '*' && peekNext(parser) == '*') {
+            advance(parser);
+            advance(parser);
+
+            if(!bold) {
+                fprintf(file, "\\textbf{");
+                bold = true;
+                
+            } else {
+                bold = false;
+                fprintf(file, "}");
+            }
+        }
+
+        // Lists
+        if(peek(parser) == '-' && parser->linePos == 0) {
+            if(!list) {
+                fprintf(file, "\\begin{itemize}\n");
+                list = true;
+            }
+
+            advance(parser);
+
+            fprintf(file, "\\item");
+        } else if(parser->linePos == 0) {
+            if(list) {
+                fprintf(file, "\\end{itemize}\n");
+                list = false;
+            }
         }
 
         fputc(advance(parser), file);
