@@ -19,7 +19,7 @@ void trim(string_view* view);
 
 typedef enum {
     TOKEN_SOF, // Start Of File (so previous doesn't break)
-    
+
     TOKEN_IDENTIFIER,
     TOKEN_TEXT,
     TOKEN_NEWLINE,

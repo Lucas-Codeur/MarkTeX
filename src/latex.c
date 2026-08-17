@@ -43,11 +43,11 @@ void printEnvironment(AstNode* node, FILE* file) {
     NodeList* title = &node->environment.titleNodes;
     if (title->size > 0) {
         string_view text = title->data[0]->text;
-        trim(&text);    
+        trim(&text);
 
-        if(text.length != 0) {
+        if (text.length != 0) {
             fprintf(file, "[");
-            
+
             for (int i = 0; i < title->size; i++) {
                 AstNode* node = title->data[i];
                 printNode(title->data[i], file);
@@ -69,7 +69,8 @@ void printEnvironment(AstNode* node, FILE* file) {
 }
 
 void printList(AstNode* node, FILE* file) {
-    if(node->type != NODE_LIST || node->children.size == 0) return;
+    if (node->type != NODE_LIST || node->children.size == 0)
+        return;
     fprintf(file, "\\begin{itemize}\n");
 
     for (int i = 0; i < node->children.size; i++) {
@@ -89,14 +90,14 @@ void printNode(AstNode* node, FILE* file) {
         fwrite(content.data, content.length * sizeof(char), 1, file);
     } else if (node->type == NODE_ENVIRONMENT) {
         printEnvironment(node, file);
-    } else if(node->type == NODE_LIST) {
+    } else if (node->type == NODE_LIST) {
         printList(node, file);
     } else if (node->type == NODE_PARAGRAPH) {
         for (int i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], file);
         }
         fprintf(file, "\n");
-    } else if(node->type == NODE_BOLD) {
+    } else if (node->type == NODE_BOLD) {
         fprintf(file, "\\textbf{");
 
         for (int i = 0; i < node->children.size; i++) {

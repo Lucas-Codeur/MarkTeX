@@ -5,15 +5,16 @@
 
 #define INITIAL_TOKEN_CAPACITY 128
 
-static string_view EMPTY_STR_VIEW = { 0 };
+static string_view EMPTY_STR_VIEW = {0};
 
 void trim(string_view* view) {
-    while(view->length > 0 && (view->data[0] == ' ' || view->data[0] == '\t')) {
+    while (view->length > 0 && (view->data[0] == ' ' || view->data[0] == '\t')) {
         view->data++;
         view->length--;
     }
 
-    while(view->length > 0 && view->data[view->length - 1] == ' ' || view->data[view->length - 1] == '\t') {
+    while (view->length > 0 && view->data[view->length - 1] == ' ' ||
+           view->data[view->length - 1] == '\t') {
         view->length--;
     }
 }
@@ -24,21 +25,21 @@ TokenList newTokenList() {
     list.size = 0;
 
     list.data = malloc(list.capacity * sizeof(Token));
-    if(list.data == NULL) {
+    if (list.data == NULL) {
         list.capacity = 0;
         printf("Token list allocation failed\n");
     }
-    
+
     return list;
 }
 
 void addToken(TokenList* list, TokenType type, string_view view, SourceLocation location) {
-    if(list->size >= list->capacity) {
+    if (list->size >= list->capacity) {
         list->data = realloc(list->data, list->capacity * 2 * sizeof(Token));
         list->capacity *= 2;
     }
-    
-    Token* token = (Token*) (list->data + list->size);
+
+    Token* token = (Token*)(list->data + list->size);
     token->type = type;
     token->text = view;
     token->location = location;
@@ -46,7 +47,7 @@ void addToken(TokenList* list, TokenType type, string_view view, SourceLocation 
 }
 
 void destroyTokenList(TokenList* list) {
-    if(list->data != NULL) {
+    if (list->data != NULL) {
         free(list->data);
         list->capacity = 0;
         list->size = 0;
@@ -74,17 +75,19 @@ void destroyLexer(Lexer* lexer) {
 }
 
 char lPeek(Lexer* lexer) {
-    if(lAtEnd(lexer)) return '\0';
+    if (lAtEnd(lexer))
+        return '\0';
     return lexer->buffer[lexer->pos];
 }
 
 char lPeekNext(Lexer* lexer) {
-    if(lexer->pos + 1 >= lexer->length) return '\0';
+    if (lexer->pos + 1 >= lexer->length)
+        return '\0';
     return lexer->buffer[lexer->pos + 1];
 }
 
 Token lPeekLast(Lexer* lexer) {
-    if(lexer->tokens.size == 0) {
+    if (lexer->tokens.size == 0) {
         Token empty = {0};
         empty.type = TOKEN_SOF;
         return empty;
@@ -93,9 +96,10 @@ Token lPeekLast(Lexer* lexer) {
 }
 
 char lAdvance(Lexer* lexer) {
-    if(lAtEnd(lexer)) return '\0';
+    if (lAtEnd(lexer))
+        return '\0';
 
-    if(lexer->buffer[lexer->pos] == '\n') {
+    if (lexer->buffer[lexer->pos] == '\n') {
         lexer->line++;
         lexer->column = 1;
     } else {
@@ -104,18 +108,16 @@ char lAdvance(Lexer* lexer) {
     return lexer->buffer[lexer->pos++];
 }
 
-bool lAtEnd(Lexer* lexer) {
-    return lexer->pos >= lexer->length;    
-}
+bool lAtEnd(Lexer* lexer) { return lexer->pos >= lexer->length; }
 
 void lSkipSpaces(Lexer* lexer) {
-    while(lPeek(lexer) == ' ' || lPeek(lexer) == '\t' || lPeek(lexer) == '\n') {
+    while (lPeek(lexer) == ' ' || lPeek(lexer) == '\t' || lPeek(lexer) == '\n') {
         lAdvance(lexer);
     }
 }
 
 void lSkipLine(Lexer* lexer) {
-    while(lPeek(lexer) != '\n') {
+    while (lPeek(lexer) != '\n') {
         lAdvance(lexer);
     }
 
@@ -129,26 +131,24 @@ void tokenize(Lexer* lexer) {
     int textLength = 0;
     SourceLocation textLocation;
 
-    #define END_TEXT {                                                                      \
-        if(textLength != 0) {                                                               \
-            string_view view = {.data = lexer->buffer + textStart, .length = textLength};   \
-            addToken(&lexer->tokens, TOKEN_TEXT, view, textLocation);                       \
-            textLength = 0;                                                                 \
-        }                                                                                   \
+#define END_TEXT                                                                                   \
+    {                                                                                              \
+        if (textLength != 0) {                                                                     \
+            string_view view = {.data = lexer->buffer + textStart, .length = textLength};          \
+            addToken(&lexer->tokens, TOKEN_TEXT, view, textLocation);                              \
+            textLength = 0;                                                                        \
+        }                                                                                          \
     };
 
     while (!lAtEnd(lexer)) {
         SourceLocation srcLoc = {
-            .column = lexer->column,
-            .line = lexer->line,
-            .offset = lexer->pos
-        };
+            .column = lexer->column, .line = lexer->line, .offset = lexer->pos};
 
         // Parse block start / ending
-        if(lPeek(lexer) == '@') {
+        if (lPeek(lexer) == '@') {
             END_TEXT;
 
-            if(lPeekNext(lexer) == '@') {
+            if (lPeekNext(lexer) == '@') {
                 addToken(&lexer->tokens, TOKEN_DOUBLE_AT, EMPTY_STR_VIEW, srcLoc);
                 lAdvance(lexer);
                 lAdvance(lexer);
@@ -159,16 +159,17 @@ void tokenize(Lexer* lexer) {
 
                 // Parse next word as a text
                 lSkipSpaces(lexer);
-                                
+
                 textLength = 0;
                 textStart = lexer->pos;
-                while (!lAtEnd(lexer) && lPeek(lexer) != ' ' && lPeek(lexer) != '\t' && lPeek(lexer) != '\n') {
+                while (!lAtEnd(lexer) && lPeek(lexer) != ' ' && lPeek(lexer) != '\t' &&
+                       lPeek(lexer) != '\n') {
                     textLength++;
                     lAdvance(lexer);
                 }
-                
-                //lSkipSpaces(lexer);
-                
+
+                // lSkipSpaces(lexer);
+
                 string_view view = {.data = lexer->buffer + textStart, .length = textLength};
                 addToken(&lexer->tokens, TOKEN_IDENTIFIER, view, srcLoc);
                 textLength = 0;
@@ -177,7 +178,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Parse title
-        if(lPeek(lexer) == '#') {
+        if (lPeek(lexer) == '#') {
             END_TEXT;
             string_view view = {.data = lexer->buffer + lexer->pos, .length = 1};
 
@@ -187,7 +188,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Parse dash
-        if(lPeek(lexer) == '-') {
+        if (lPeek(lexer) == '-') {
             END_TEXT;
             string_view view = {.data = lexer->buffer + lexer->pos, .length = 1};
 
@@ -197,7 +198,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Parse bold text
-        if(lPeek(lexer) == '*' && lPeekNext(lexer) == '*') {
+        if (lPeek(lexer) == '*' && lPeekNext(lexer) == '*') {
             END_TEXT;
 
             addToken(&lexer->tokens, TOKEN_BOLD, EMPTY_STR_VIEW, srcLoc);
@@ -207,7 +208,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Parse italic text
-        if(lPeek(lexer) == '_' && lPeekNext(lexer) == '_') {
+        if (lPeek(lexer) == '_' && lPeekNext(lexer) == '_') {
             END_TEXT;
 
             addToken(&lexer->tokens, TOKEN_ITALIC, EMPTY_STR_VIEW, srcLoc);
@@ -217,7 +218,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Parse newline
-        if(lPeek(lexer) == '\n') {
+        if (lPeek(lexer) == '\n') {
             END_TEXT;
             string_view view = {.data = lexer->buffer + lexer->pos, .length = 1};
 
@@ -227,7 +228,7 @@ void tokenize(Lexer* lexer) {
         }
 
         // Everything else should be text
-        if(textLength == 0) {
+        if (textLength == 0) {
             textLocation.line = lexer->line;
             textLocation.column = lexer->column;
             textLocation.offset = lexer->pos;
@@ -241,8 +242,8 @@ void tokenize(Lexer* lexer) {
     }
 
     printf("\n");
-    for(int i  = 0; i < lexer->tokens.size; i++) {
+    for (int i = 0; i < lexer->tokens.size; i++) {
         printf("%i, ", lexer->tokens.data[i].type);
-    } 
+    }
     printf("\n");
 }

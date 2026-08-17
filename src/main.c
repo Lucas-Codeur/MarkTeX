@@ -1,16 +1,16 @@
 #include "latex.h"
 #include "lexer.h"
 #include "parser.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 // Warning: your duty to free the buffer
 char* readFile(const char* path) {
     FILE* file = fopen("test.md", "r");
-    if(!file) {
+    if (!file) {
         printf("Could not open file\n");
         return NULL;
     }
@@ -19,9 +19,9 @@ char* readFile(const char* path) {
     int size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    #ifdef FS_DEBUG
+#ifdef FS_DEBUG
     printf("File size: %i\n", size);
-    #endif
+#endif
 
     char* buf = malloc(size * sizeof(char) + 1);
     fread(buf, 1, size, file);
@@ -40,10 +40,7 @@ int main(int argc, char** argv) {
     Lexer lexer = newLexer(buf);
     tokenize(&lexer);
 
-    Parser parser = {
-        .lexer = &lexer,
-        .pos = 0
-    };
+    Parser parser = {.lexer = &lexer, .pos = 0};
 
     AstNode* parsed = parseDocument(&parser);
 

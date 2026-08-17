@@ -36,17 +36,16 @@ struct AstNode {
         struct {
             int level;
         } header;
-        
+
         struct {
             string_view name;
             NodeList titleNodes;
         } environment;
-        
+
         struct {
         } paragraph;
-        
     };
-    
+
     string_view text;
     NodeType type;
     NodeList children;

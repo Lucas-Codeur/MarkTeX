@@ -106,40 +106,36 @@ Token pAdvance(Parser* parser) {
 bool pAtEnd(Parser* parser) { return parser->pos >= parser->lexer->tokens.size; }
 
 void trimTextLeft(AstNode* node) {
-    if(node->type == NODE_TEXT) {
-        while(node->text.length > 0 && (
-            node->text.data[0] == ' '  || 
-            node->text.data[0] == '\t' || 
-            node->text.data[0] == '\n'
-        )) {
+    if (node->type == NODE_TEXT) {
+        while (node->text.length > 0 && (node->text.data[0] == ' ' || node->text.data[0] == '\t' ||
+                                         node->text.data[0] == '\n')) {
             node->text.data++;
             node->text.length--;
         }
     } else {
-        if(node->children.size > 0) {
+        if (node->children.size > 0) {
             trimTextLeft(node->children.data[0]);
         }
     }
 }
 
 void trimTextRight(AstNode* node) {
-    if(node->type == NODE_TEXT) {
-        while(node->text.length > 0 && (
-            node->text.data[node->text.length - 1] == ' '  || 
-            node->text.data[node->text.length - 1] == '\t' || 
-            node->text.data[node->text.length - 1] == '\n'
-        )) {
+    if (node->type == NODE_TEXT) {
+        while (node->text.length > 0 && (node->text.data[node->text.length - 1] == ' ' ||
+                                         node->text.data[node->text.length - 1] == '\t' ||
+                                         node->text.data[node->text.length - 1] == '\n')) {
             node->text.length--;
         }
     } else {
-        if(node->children.size > 0) {
+        if (node->children.size > 0) {
             trimTextRight(node->children.data[node->children.size - 1]);
         }
     }
 }
 
 void trimNodeListText(NodeList* list) {
-    if(list == NULL || list->size == 0) return;
+    if (list == NULL || list->size == 0)
+        return;
 
     trimTextLeft(list->data[0]);
     trimTextRight(list->data[list->size - 1]);
@@ -229,15 +225,15 @@ AstNode* parseEnvironment(Parser* parser) {
     AstNode* environment = nodeCreate(NODE_ENVIRONMENT);
     environment->environment.name = name.text;
     environment->environment.titleNodes = newNodeList();
-    
+
     while (pPeek(parser).type != TOKEN_NEWLINE) {
         AstNode* node = parseInline(parser);
-        
+
         if (node == NULL) {
             printf("parseInline returned NULL\n");
             return NULL;
         }
-        
+
         nodeListAdd(&environment->environment.titleNodes, node);
     }
     trimNodeListText(&environment->environment.titleNodes);
@@ -245,7 +241,7 @@ AstNode* parseEnvironment(Parser* parser) {
     pExpect(parser, TOKEN_NEWLINE);
 
     while (pPeek(parser).type != TOKEN_DOUBLE_AT) {
-        if(pPeek(parser).type == TOKEN_DASH) {
+        if (pPeek(parser).type == TOKEN_DASH) {
             nodeListAdd(&environment->children, parseList(parser));
         } else {
             nodeListAdd(&environment->children, parseParagraph(parser));
@@ -288,11 +284,11 @@ AstNode* parseList(Parser* parser) {
         if (paragraph == NULL) {
             destroyNode(paragraph);
             return NULL;
-        } 
-    
+        }
+
         trimTextLeft(paragraph);
         trimTextRight(paragraph);
-        
+
         nodeListAdd(&list->children, paragraph);
     }
 
