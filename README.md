@@ -6,7 +6,13 @@ MarkTeX is a small transpiler to process a custom syntax that would fit somewher
 
 This tool was designed for a personnal use, and it is in an early version. Hence you should not expect proper error handling, rigorous testing or fancy features and adaptability. I may or may not add them in the future, but if you want feel free to contribute (just please ask before adding features). All contributions are highly appreciated 😀.
 
+## Command line arguments
+Work in progress.
+
 ## The syntax
+### Front matter
+Work in progress. It will define document metadata like title, author and date.
+
 ### Environments
 I use a block system for environments. For now it doesn't support nested blocks (not tested so undefined behaviour) as they are intended for content organization and not math block.
 

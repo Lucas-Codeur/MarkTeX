@@ -35,8 +35,17 @@ TokenList newTokenList() {
 
 void addToken(TokenList* list, TokenType type, string_view view, SourceLocation location) {
     if (list->size >= list->capacity) {
-        list->data = realloc(list->data, list->capacity * 2 * sizeof(Token));
-        list->capacity *= 2;
+        int newCapacity = list->capacity * 2;
+
+        Token* newData = realloc(list->data, newCapacity * sizeof(Token));
+
+        if (newData == NULL) {
+            printf("Token list reallocation failed\n");
+            return;
+        }
+
+        list->data = newData;
+        list->capacity = newCapacity;
     }
 
     Token* token = (Token*)(list->data + list->size);
@@ -47,11 +56,11 @@ void addToken(TokenList* list, TokenType type, string_view view, SourceLocation 
 }
 
 void destroyTokenList(TokenList* list) {
-    if (list->data != NULL) {
-        free(list->data);
-        list->capacity = 0;
-        list->size = 0;
-    }
+    free(list->data);
+    
+    list->data = NULL;
+    list->capacity = 0;
+    list->size = 0;
 }
 
 Lexer newLexer(char* source) {
@@ -168,8 +177,6 @@ void tokenize(Lexer* lexer) {
                     lAdvance(lexer);
                 }
 
-                // lSkipSpaces(lexer);
-
                 string_view view = {.data = lexer->buffer + textStart, .length = textLength};
                 addToken(&lexer->tokens, TOKEN_IDENTIFIER, view, srcLoc);
                 textLength = 0;
@@ -240,10 +247,4 @@ void tokenize(Lexer* lexer) {
         }
         lAdvance(lexer);
     }
-
-    printf("\n");
-    for (int i = 0; i < lexer->tokens.size; i++) {
-        printf("%i, ", lexer->tokens.data[i].type);
-    }
-    printf("\n");
 }
