@@ -23,7 +23,7 @@ typedef struct {
 
 void printUsage(const char* program) {
     printf(
-        "Usage: %s -i <input> -o <output> [--verbose]\n"
+        "Usage: %s -i <input> -o <output> [--verbose] [--watch]\n"
         "\n"
         "Options:\n"
         "  -i, --input FILE     Input Markdown file\n"
@@ -111,13 +111,20 @@ void printCompiledContent(const char* fileName, char* input, FILE* output) {
     Parser parser = {.lexer = &lexer, .pos = 0};
     AstNode* parsed = parseDocument(&parser);
 
+    OutputBuffer outBuffer = newOutputBuffer(4096);
+
     marktexLog(LOG_VERBOSE_ONLY, "Parsed document");
 
-    print(parsed, output);
+    print(parsed, &outBuffer);
+
     marktexLog(LOG_VERBOSE_ONLY, "LaTeX generated");
+
+    outputBufferFlush(&outBuffer, output);
 
     destroyLexer(&lexer);
     destroyNode(parsed);
+
+    deleteOutputBuffer(&outBuffer);
 
     int64_t stop = timestamp_us();
     int64_t duration = stop - start;

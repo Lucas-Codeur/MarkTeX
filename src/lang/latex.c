@@ -1,10 +1,8 @@
 #include "latex.h"
-#include "lexer.h"
 #include "parser.h"
-#include <stdio.h>
 #include <stdlib.h>
 
-void printHeader(AstNode* node, FILE* file) {
+void printHeader(AstNode* node, OutputBuffer* buffer) {
     if (node->type != NODE_HEADER)
         return;
 
@@ -23,22 +21,22 @@ void printHeader(AstNode* node, FILE* file) {
         break;
     }
 
-    fprintf(file, "\\%s{", command);
+    outputBufferWriteFormat(buffer, "\\%s{", command);
 
     for (int i = 0; i < node->children.size; i++) {
-        printNode(node->children.data[i], file);
+        printNode(node->children.data[i], buffer);
     }
 
-    fprintf(file, "}\n");
+    outputBufferWriteStr(buffer, "}\n");
 }
 
-void printEnvironment(AstNode* node, FILE* file) {
+void printEnvironment(AstNode* node, OutputBuffer* buffer) {
     if (node == NULL || node->type != NODE_ENVIRONMENT)
         return;
 
-    fprintf(file, "\\begin{");
-    fwrite(node->environment.name.data, node->environment.name.length * sizeof(char), 1, file);
-    fprintf(file, "}");
+    outputBufferWriteStr(buffer, "\\begin{");
+    outputBufferWriteStrView(buffer, &node->environment.name);
+    outputBufferWriteStr(buffer, "}");
 
     NodeList* title = &node->environment.titleNodes;
     if (title->size > 0) {
@@ -46,70 +44,69 @@ void printEnvironment(AstNode* node, FILE* file) {
         trim(&text);
 
         if (text.length != 0) {
-            fprintf(file, "[");
+            outputBufferWriteStr(buffer, "[");
 
             for (int i = 0; i < title->size; i++) {
                 AstNode* node = title->data[i];
-                printNode(title->data[i], file);
+                printNode(title->data[i], buffer);
             }
 
-            fprintf(file, "]");
+            outputBufferWriteStr(buffer, "]");
         }
     }
 
-    fputc('\n', file);
+    outputBufferWriteStr(buffer, "\n");
 
     for (int i = 0; i < node->children.size; i++) {
-        printNode(node->children.data[i], file);
+        printNode(node->children.data[i], buffer);
     }
 
-    fprintf(file, "\\end{");
-    fwrite(node->environment.name.data, node->environment.name.length * sizeof(char), 1, file);
-    fprintf(file, "}\n\n");
+    outputBufferWriteStr(buffer, "\\end{");
+    outputBufferWriteStrView(buffer, &node->environment.name);
+    outputBufferWriteStr(buffer, "}\n\n");
 }
 
-void printList(AstNode* node, FILE* file) {
+void printList(AstNode* node, OutputBuffer* buffer) {
     if (node->type != NODE_LIST || node->children.size == 0)
         return;
-    fprintf(file, "\\begin{itemize}\n");
+    outputBufferWriteStr(buffer, "\\begin{itemize}\n");
 
     for (int i = 0; i < node->children.size; i++) {
-        fprintf(file, "\\item ");
-        printNode(node->children.data[i], file);
+        outputBufferWriteStr(buffer, "\\item ");
+        printNode(node->children.data[i], buffer);
         // '\n' character is inserted by the printNode paragraph
     }
 
-    fprintf(file, "\\end{itemize}\n");
+    outputBufferWriteStr(buffer, "\\end{itemize}\n");
 }
 
-void printNode(AstNode* node, FILE* file) {
+void printNode(AstNode* node, OutputBuffer* buffer) {
     if (node->type == NODE_HEADER) {
-        printHeader(node, file);
+        printHeader(node, buffer);
     } else if (node->type == NODE_TEXT) {
-        string_view content = node->text;
-        fwrite(content.data, content.length * sizeof(char), 1, file);
+        outputBufferWriteStrView(buffer, &node->text);
     } else if (node->type == NODE_ENVIRONMENT) {
-        printEnvironment(node, file);
+        printEnvironment(node, buffer);
     } else if (node->type == NODE_LIST) {
-        printList(node, file);
+        printList(node, buffer);
     } else if (node->type == NODE_PARAGRAPH) {
         for (int i = 0; i < node->children.size; i++) {
-            printNode(node->children.data[i], file);
+            printNode(node->children.data[i], buffer);
         }
-        fprintf(file, "\n");
+        outputBufferWriteStr(buffer, "\n");
     } else if (node->type == NODE_BOLD) {
-        fprintf(file, "\\textbf{");
+        outputBufferWriteStr(buffer, "\\textbf{");
 
         for (int i = 0; i < node->children.size; i++) {
-            printNode(node->children.data[i], file);
+            printNode(node->children.data[i], buffer);
         }
 
-        fprintf(file, "}");
+        outputBufferWriteStr(buffer, "}");
     }
 }
 
-void print(AstNode* root, FILE* file) {
+void print(AstNode* root, OutputBuffer* buffer) {
     for (int i = 0; i < root->children.size; i++) {
-        printNode(root->children.data[i], file);
+        printNode(root->children.data[i], buffer);
     }
 }

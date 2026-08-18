@@ -41,9 +41,6 @@ struct AstNode {
             string_view name;
             NodeList titleNodes;
         } environment;
-
-        struct {
-        } paragraph;
     };
 
     string_view text;

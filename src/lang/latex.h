@@ -2,9 +2,8 @@
 #define LATEX_H
 
 #include "parser.h"
-#include <stdio.h>
 
-void printNode(AstNode* node, FILE* file);
-void print(AstNode* root, FILE* file);
+void printNode(AstNode* node, OutputBuffer* buffer);
+void print(AstNode* root, OutputBuffer* buffer);
 
 #endif

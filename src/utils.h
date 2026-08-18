@@ -3,7 +3,39 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+
+// String view
+
+typedef struct {
+    const char* data;
+    int length;
+} string_view;
+
+void trim(string_view* view);
+
+// Output buffer
+
+typedef struct {
+    char* data;
+    size_t pos;
+    size_t capacity;
+} OutputBuffer;
+
+OutputBuffer newOutputBuffer(size_t capacity);
+
+void outputBufferWrite(OutputBuffer* buffer, const char* data, size_t size);
+void outputBufferWriteStr(OutputBuffer* buffer, const char* data);
+void outputBufferWriteFormat(OutputBuffer* buffer, const char* data, ...);
+void outputBufferWriteStrView(OutputBuffer* buffer, string_view* view);
+
+
+bool outputBufferEnsureCapacity(OutputBuffer* buffer, size_t required);
+void outputBufferFlush(OutputBuffer* buffer, FILE* file);
+
+void deleteOutputBuffer(OutputBuffer* buffer);
 
 // Time
 
@@ -25,14 +57,5 @@ void setLogVerbose(bool log);
 // File utils
 
 char* readFile(const char* path);
-
-// String view
-
-typedef struct {
-    const char* data;
-    int length;
-} string_view;
-
-void trim(string_view* view);
 
 #endif
