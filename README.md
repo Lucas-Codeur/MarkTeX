@@ -1,6 +1,6 @@
 ## MarkTeX
 
-MarkTeX is a small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdow. I made this tool to speed up note taking for my upcoming physics degree (starting september 2026). For now it only supports Linux and Windows support may be added in the upcoming months.
+MarkTeX is a fast small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdow. I made this tool to speed up note taking for my upcoming physics degree (starting september 2026). For now it only supports Linux and Windows support may be added in the upcoming months.
 
 ## Early version Disclaimer
 

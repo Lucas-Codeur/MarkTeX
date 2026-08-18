@@ -1,3 +1,8 @@
+/*
+This file is part of MarkTeX which is released under the MIT liscence.
+See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LICENSE for full license details.
+*/
+
 #include "latex.h"
 #include "parser.h"
 #include <stddef.h>

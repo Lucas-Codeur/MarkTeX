@@ -1,3 +1,8 @@
+/*
+This file is part of MarkTeX which is released under the MIT liscence.
+See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LICENSE for full license details.
+*/
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -30,7 +35,6 @@ void outputBufferWrite(OutputBuffer* buffer, const char* data, size_t size);
 void outputBufferWriteStr(OutputBuffer* buffer, const char* data);
 void outputBufferWriteFormat(OutputBuffer* buffer, const char* data, ...);
 void outputBufferWriteStrView(OutputBuffer* buffer, string_view* view);
-
 
 bool outputBufferEnsureCapacity(OutputBuffer* buffer, size_t required);
 void outputBufferFlush(OutputBuffer* buffer, FILE* file);

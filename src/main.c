@@ -1,3 +1,8 @@
+/*
+This file is part of MarkTeX which is released under the MIT liscence.
+See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LICENSE for full license details.
+*/
+
 #include "lang/latex.h"
 #include "lang/lexer.h"
 #include "lang/parser.h"
@@ -26,7 +31,7 @@ typedef struct {
 
 void printUsage(const char* program) {
     printf(
-        "Usage: %s -i <input> -o <output> [--verbose] [--watch]\n"
+        "Usage: %s -i <input> -o <output> [--verbose]\n"
         "\n"
         "Options:\n"
         "  -i, --input FILE     Input Markdown file\n"
