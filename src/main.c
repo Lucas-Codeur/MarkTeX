@@ -1,15 +1,17 @@
 #include "lang/latex.h"
 #include "lang/lexer.h"
 #include "lang/parser.h"
+#include "utils.h"
 
-#include <bits/getopt_core.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 typedef struct {
     const char* input;
@@ -96,60 +98,55 @@ bool parseOptions(int argc, char** argv, Options* options) {
     return true;
 }
 
-// Warning: your duty to free the buffer
-char* readFile(const char* path) {
-    FILE* file = fopen(path, "r");
-    if (!file) {
-        printf("Could not open file\n");
-        return NULL;
-    }
+void printCompiledContent(const char* fileName, char* input, FILE* output) {
+    marktexLog(LOG_VERBOSE_ONLY, "--- Compiling %s ---", fileName);
 
-    fseek(file, 0, SEEK_END);
-    int size = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    int64_t start = timestamp_us();
 
-#ifdef FS_DEBUG
-    printf("File size: %i\n", size);
-#endif
-
-    char* buf = malloc(size * sizeof(char) + 1);
-    fread(buf, 1, size, file);
-    buf[size] = '\0';
-    fclose(file);
-
-    return buf;
-}
-
-void printCompiledContent(char* input, FILE* output) {
     Lexer lexer = newLexer(input);
     tokenize(&lexer);
 
-    Parser parser = {.lexer = &lexer, .pos = 0};
+    marktexLog(LOG_VERBOSE_ONLY, "Generated %i tokens from input", lexer.tokens.size);
 
+    Parser parser = {.lexer = &lexer, .pos = 0};
     AstNode* parsed = parseDocument(&parser);
 
+    marktexLog(LOG_VERBOSE_ONLY, "Parsed document");
+
     print(parsed, output);
+    marktexLog(LOG_VERBOSE_ONLY, "LaTeX generated");
 
     destroyLexer(&lexer);
     destroyNode(parsed);
+
+    int64_t stop = timestamp_us();
+    int64_t duration = stop - start;
+
+    marktexLog(LOG_INFO, "Successfully compiled %s in %i µs", fileName, duration);
 }
 
 int main(int argc, char** argv) {
     Options options;
+    
     if (!parseOptions(argc, argv, &options)) {
         printUsage(argv[0]);
         return EXIT_FAILURE;
     }
 
+    if(options.verbose) setLogVerbose(true);
+
+    
     if (access(options.input, F_OK) == -1) {
-        printf("Error: input file (%s) not found\n", options.input);
+        marktexLog(LOG_ERROR, "input file (%s) not found", options.input);
         return EXIT_FAILURE;
     }
 
     if (access(options.template, F_OK) == -1) {
-        printf("Error: template file (%s) not found\n", options.template);
+        marktexLog(LOG_ERROR, "template file (%s) not found", options.template);
         return EXIT_FAILURE;
     }
+
+    int64_t start = timestamp_us();
 
     char* input = readFile(options.input);
     char* template = readFile(options.template);
@@ -162,7 +159,7 @@ int main(int argc, char** argv) {
     if (!contentPos) {
         free(input);
         free(template);
-        printf("Could not find {{MARKTEX_CONTENT}} placeholder in the template\n");
+        marktexLog(LOG_ERROR, "Could not find {{MARKTEX_CONTENT}} placeholder in the template, aborting");
         return EXIT_FAILURE;
     }
 
@@ -170,11 +167,16 @@ int main(int argc, char** argv) {
 
     fwrite(template, 1, contentPos - template, outFile);
 
-    printCompiledContent(input, outFile);
+    printCompiledContent(options.input, input, outFile);
 
     fputs(contentPos + strlen(contentPlaceholder), outFile);
 
     fclose(outFile);
+
+    int64_t stop = timestamp_us();
+    int64_t duration = stop - start;
+
+    marktexLog(LOG_INFO, "All tasks completed in %i µs", duration);
 
     free(input);
     free(template);

@@ -9,4 +9,5 @@ add_executable(marktex
     src/lang/lexer.c
     src/lang/parser.c
     src/lang/latex.c
+    src/utils.c
 )

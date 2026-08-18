@@ -3,19 +3,13 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "../utils.h"
 
 typedef struct {
     int line;
     int column;
     int offset;
 } SourceLocation;
-
-typedef struct {
-    const char* data;
-    int length;
-} string_view;
-
-void trim(string_view* view);
 
 typedef enum {
     TOKEN_SOF, // Start Of File (so previous doesn't break)

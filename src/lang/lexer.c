@@ -7,18 +7,6 @@
 
 static string_view EMPTY_STR_VIEW = {0};
 
-void trim(string_view* view) {
-    while (view->length > 0 && (view->data[0] == ' ' || view->data[0] == '\t')) {
-        view->data++;
-        view->length--;
-    }
-
-    while (view->length > 0 && view->data[view->length - 1] == ' ' ||
-           view->data[view->length - 1] == '\t') {
-        view->length--;
-    }
-}
-
 TokenList newTokenList() {
     TokenList list;
     list.capacity = INITIAL_TOKEN_CAPACITY;
