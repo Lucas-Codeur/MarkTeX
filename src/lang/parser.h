@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include "lexer.h"
+#include <stddef.h>
 
 typedef struct AstNode AstNode;
 
@@ -23,8 +24,8 @@ typedef enum {
 
 typedef struct {
     AstNode** data;
-    int capacity;
-    int size;
+    size_t capacity;
+    size_t size;
 } NodeList;
 
 NodeList newNodeList();

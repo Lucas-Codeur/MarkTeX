@@ -36,8 +36,8 @@ typedef struct {
 } Token;
 
 typedef struct {
-    int size;
-    int capacity;
+    size_t size;
+    size_t capacity;
     Token* data;
 } TokenList;
 
@@ -47,12 +47,12 @@ void destroyTokenList(TokenList* list);
 
 typedef struct {
     char* buffer;
-    int length;
+    size_t length;
     TokenList tokens;
 
-    int pos;
-    int line;
-    int column;
+    size_t pos;
+    size_t line;
+    size_t column;
 } Lexer;
 
 Lexer newLexer(char* source);

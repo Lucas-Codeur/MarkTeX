@@ -1,12 +1,27 @@
 cmake_minimum_required(VERSION 3.20)
 project(marktex VERSION 1.0 LANGUAGES C)
 
+# Embbed the default template
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/default.tex" TEMPLATE)
+
+# Escape characters for a C string
+string(REPLACE "\\" "\\\\" TEMPLATE "${TEMPLATE}")
+string(REPLACE "\"" "\\\"" TEMPLATE "${TEMPLATE}")
+string(REPLACE "\n" "\\n\"\n\"" TEMPLATE "${TEMPLATE}")
+string(REPLACE "\r" "\\r" TEMPLATE "${TEMPLATE}")
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/src/default_template.c"
+"const char default_template[] = \"${TEMPLATE}\";\n"
+)
+
 add_executable(marktex
     src/main.c
     src/lang/lexer.c
     src/lang/parser.c
     src/lang/latex.c
     src/utils.c
+    src/default_template.c
 )
 
 # Debug config

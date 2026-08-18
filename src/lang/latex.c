@@ -1,5 +1,6 @@
 #include "latex.h"
 #include "parser.h"
+#include <stddef.h>
 #include <stdlib.h>
 
 void printHeader(AstNode* node, OutputBuffer* buffer) {
@@ -23,7 +24,7 @@ void printHeader(AstNode* node, OutputBuffer* buffer) {
 
     outputBufferWriteFormat(buffer, "\\%s{", command);
 
-    for (int i = 0; i < node->children.size; i++) {
+    for (size_t i = 0; i < node->children.size; i++) {
         printNode(node->children.data[i], buffer);
     }
 
@@ -46,8 +47,7 @@ void printEnvironment(AstNode* node, OutputBuffer* buffer) {
         if (text.length != 0) {
             outputBufferWriteStr(buffer, "[");
 
-            for (int i = 0; i < title->size; i++) {
-                AstNode* node = title->data[i];
+            for (size_t i = 0; i < title->size; i++) {
                 printNode(title->data[i], buffer);
             }
 
@@ -57,7 +57,7 @@ void printEnvironment(AstNode* node, OutputBuffer* buffer) {
 
     outputBufferWriteStr(buffer, "\n");
 
-    for (int i = 0; i < node->children.size; i++) {
+    for (size_t i = 0; i < node->children.size; i++) {
         printNode(node->children.data[i], buffer);
     }
 
@@ -71,7 +71,7 @@ void printList(AstNode* node, OutputBuffer* buffer) {
         return;
     outputBufferWriteStr(buffer, "\\begin{itemize}\n");
 
-    for (int i = 0; i < node->children.size; i++) {
+    for (size_t i = 0; i < node->children.size; i++) {
         outputBufferWriteStr(buffer, "\\item ");
         printNode(node->children.data[i], buffer);
         // '\n' character is inserted by the printNode paragraph
@@ -90,14 +90,14 @@ void printNode(AstNode* node, OutputBuffer* buffer) {
     } else if (node->type == NODE_LIST) {
         printList(node, buffer);
     } else if (node->type == NODE_PARAGRAPH) {
-        for (int i = 0; i < node->children.size; i++) {
+        for (size_t i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], buffer);
         }
         outputBufferWriteStr(buffer, "\n");
     } else if (node->type == NODE_BOLD) {
         outputBufferWriteStr(buffer, "\\textbf{");
 
-        for (int i = 0; i < node->children.size; i++) {
+        for (size_t i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], buffer);
         }
 
@@ -106,7 +106,7 @@ void printNode(AstNode* node, OutputBuffer* buffer) {
 }
 
 void print(AstNode* root, OutputBuffer* buffer) {
-    for (int i = 0; i < root->children.size; i++) {
+    for (size_t i = 0; i < root->children.size; i++) {
         printNode(root->children.data[i], buffer);
     }
 }

@@ -11,7 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
+
+#define DEFAULT_TEMPLATE NULL
+
+extern const char default_template[];
 
 typedef struct {
     const char* input;
@@ -37,7 +40,7 @@ void printUsage(const char* program) {
 bool parseOptions(int argc, char** argv, Options* options) {
     options->input = NULL;
     options->output = NULL;
-    options->template = NULL;
+    options->template = DEFAULT_TEMPLATE;
     options->verbose = false;
     options->watch = false;
 
@@ -79,10 +82,6 @@ bool parseOptions(int argc, char** argv, Options* options) {
         case '?':
             return false;
         }
-    }
-
-    if (options->template == NULL) {
-        options->template = "default.tex";
     }
 
     if (options->input == NULL) {
@@ -148,7 +147,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    if (access(options.template, F_OK) == -1) {
+    if (options.template != DEFAULT_TEMPLATE && access(options.template, F_OK) == -1) {
         marktexLog(LOG_ERROR, "template file (%s) not found", options.template);
         return EXIT_FAILURE;
     }
@@ -156,7 +155,13 @@ int main(int argc, char** argv) {
     int64_t start = timestamp_us();
 
     char* input = readFile(options.input);
-    char* template = readFile(options.template);
+    char* template = NULL;
+
+    if(options.template != DEFAULT_TEMPLATE) {
+        template = readFile(options.template);
+    } else {
+        template = (char*) default_template;
+    }
 
     FILE* outFile = fopen(options.output, "w");
 
@@ -186,6 +191,8 @@ int main(int argc, char** argv) {
     marktexLog(LOG_INFO, "All tasks completed in %i µs", duration);
 
     free(input);
-    free(template);
+    if(options.template != DEFAULT_TEMPLATE) {
+        free(template);
+    }
     return EXIT_SUCCESS;
 }
