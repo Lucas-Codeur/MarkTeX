@@ -1,6 +1,9 @@
+### Linux Only (for now)
+For now this tool is reliant on Linux only functions, thus making it incompatible with Windows. I will add Windows support in the upcoming month. If you are on Windows and interested in the tool, please open an issue and I'll focus on it.
+
 ## MarkTeX
 
-MarkTeX is a fast small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdow. I made this tool to speed up note taking for my upcoming physics degree (starting september 2026). For now it only supports Linux and Windows support may be added in the upcoming months.
+MarkTeX is a fast small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdow. I made this tool to speed up note taking for my upcoming physics degree (starting september 2026).
 
 ## Early version Disclaimer
 
@@ -18,6 +21,7 @@ Options:
   -t, --template FILE  Template file
       --verbose        Enable verbose output
   -h, --help           Show this help
+  -w, --watch          Automatically recompile upon update
 ```
 
 ## The syntax
