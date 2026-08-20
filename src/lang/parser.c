@@ -5,12 +5,14 @@ See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LIC
 
 #include "parser.h"
 #include "lexer.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define INITIAL_NODE_CAPACITY 4
 
 static Token EMPTY_TOKEN = {.type = TOKEN_EOF};
+static Token INVALID_TOKEN = {.type = TOKEN_EOF};
 
 NodeList newNodeList() {
     NodeList list;
@@ -20,7 +22,7 @@ NodeList newNodeList() {
     list.data = malloc(list.capacity * sizeof(AstNode*));
     if (list.data == NULL) {
         list.capacity = 0;
-        printf("Node list allocation failed\n");
+        marktexLog(LOG_ERROR, "Node list allocation failed.");
     }
 
     return list;
@@ -33,7 +35,7 @@ void nodeListAdd(NodeList* list, AstNode* node) {
         AstNode** newData = realloc(list->data, newCapacity * sizeof(AstNode*));
 
         if (newData == NULL) {
-            printf("Node list reallocation failed\n");
+            marktexLog(LOG_ERROR, "Node list reallocation failed.");
             return;
         }
 
@@ -70,13 +72,17 @@ void destroyNodeList(NodeList* list) {
     list->capacity = 0;
 }
 
+void parserInterrupt(Parser* parser) {
+    parser->interrupted = true;
+}
+
 Token pExpect(Parser* parser, TokenType type) {
     Token token = pPeek(parser);
 
     if (token.type != type) {
-        printf("Expected token %d, got %d at line %d\n", type, token.type, token.location.line);
+        marktexLog(LOG_WARNING, "Expected token %s, got %s at line %d.", tokenTypeName(type), tokenTypeName(token.type), token.location.line);
 
-        return EMPTY_TOKEN;
+        return INVALID_TOKEN;
     }
 
     pAdvance(parser);
@@ -149,7 +155,7 @@ void trimNodeListText(NodeList* list) {
 AstNode* parseDocument(Parser* parser) {
     AstNode* document = nodeCreate(NODE_DOCUMENT);
 
-    while (!pAtEnd(parser)) {
+    while (!pAtEnd(parser) && !parser->interrupted) {
         if (pPeek(parser).type == TOKEN_HASH && pPeek(parser).location.column == 1) {
             nodeListAdd(&document->children, parseHeader(parser));
             continue;
@@ -166,7 +172,6 @@ AstNode* parseDocument(Parser* parser) {
         }
 
         if (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1) {
-            printf("List found\n");
             nodeListAdd(&document->children, parseList(parser));
             continue;
         }
@@ -178,9 +183,9 @@ AstNode* parseDocument(Parser* parser) {
             continue;
         }
 
-        printf(
-            "Parser error: found token (%i) at line %i.\n", pPeek(parser).type,
-            pPeek(parser).location.line);
+
+        marktexLog(LOG_WARNING, "Parser error: found token (%s) at line %i.", tokenTypeName(pPeek(parser).type), pPeek(parser).location.line);
+        parserInterrupt(parser);
     }
 
     return document;
@@ -190,13 +195,13 @@ AstNode* parseHeader(Parser* parser) {
     int level = 0;
 
     // Consume the hashtag
-    while (pPeek(parser).type == TOKEN_HASH) {
+    while (pPeek(parser).type == TOKEN_HASH && !parser->interrupted) {
         pAdvance(parser);
         level++;
     }
 
     if (level == 0 || level > 3) {
-        printf("Invalid header level\n");
+        marktexLog(LOG_WARNING, "Found invalid header level at line %i, should be between 1 and 3.", pPeek(parser).location.line);
         return NULL;
     }
 
@@ -204,7 +209,7 @@ AstNode* parseHeader(Parser* parser) {
     header->header.level = level;
 
     // Rest of line is title
-    while (pPeek(parser).type != TOKEN_NEWLINE && !pAtEnd(parser)) {
+    while (pPeek(parser).type != TOKEN_NEWLINE && !pAtEnd(parser) && !parser->interrupted) {
         AstNode* child = parseInline(parser);
 
         if (child == NULL)
@@ -231,11 +236,10 @@ AstNode* parseEnvironment(Parser* parser) {
     environment->environment.name = name.text;
     environment->environment.titleNodes = newNodeList();
 
-    while (pPeek(parser).type != TOKEN_NEWLINE) {
+    while (pPeek(parser).type != TOKEN_NEWLINE && !parser->interrupted) {
         AstNode* node = parseInline(parser);
 
         if (node == NULL) {
-            printf("parseInline returned NULL\n");
             return NULL;
         }
 
@@ -245,7 +249,7 @@ AstNode* parseEnvironment(Parser* parser) {
 
     pExpect(parser, TOKEN_NEWLINE);
 
-    while (pPeek(parser).type != TOKEN_DOUBLE_AT) {
+    while (pPeek(parser).type != TOKEN_DOUBLE_AT && !parser->interrupted) {
         if (pPeek(parser).type == TOKEN_DASH) {
             nodeListAdd(&environment->children, parseList(parser));
         } else {
@@ -261,7 +265,7 @@ AstNode* parseEnvironment(Parser* parser) {
 AstNode* parseParagraph(Parser* parser) {
     AstNode* paragraph = nodeCreate(NODE_PARAGRAPH);
 
-    while (pPeek(parser).type != TOKEN_NEWLINE && pPeek(parser).type != TOKEN_DOUBLE_AT) {
+    while (pPeek(parser).type != TOKEN_NEWLINE && pPeek(parser).type != TOKEN_DOUBLE_AT && !parser->interrupted) {
         AstNode* child = parseInline(parser);
 
         if (child == NULL) {
@@ -281,7 +285,7 @@ AstNode* parseParagraph(Parser* parser) {
 AstNode* parseList(Parser* parser) {
     AstNode* list = nodeCreate(NODE_LIST);
 
-    while (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1) {
+    while (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1 && !parser->interrupted) {
         pAdvance(parser);
 
         AstNode* paragraph = parseParagraph(parser);
@@ -303,8 +307,7 @@ AstNode* parseList(Parser* parser) {
 AstNode* parseInline(Parser* parser) {
     Token token = pPeek(parser);
 
-    if (pPeek(parser).type == TOKEN_TEXT || pPeek(parser).type == TOKEN_DASH ||
-        pPeek(parser).type == TOKEN_HASH) {
+    if (pPeek(parser).type == TOKEN_TEXT || pPeek(parser).type == TOKEN_DASH || pPeek(parser).type == TOKEN_HASH) {
         pAdvance(parser);
 
         AstNode* node = nodeCreate(NODE_TEXT);
@@ -317,16 +320,17 @@ AstNode* parseInline(Parser* parser) {
         return parseBold(parser);
     }
 
-    printf("Wrong token (%i) in inline content at line %i\n", token.type, token.location.line);
+    marktexLog(LOG_WARNING, "Wrong token (%s) in inline content at line %i.", tokenTypeName(token.type), token.location.line);
+    parserInterrupt(parser);
     return NULL;
 }
 
 AstNode* parseBold(Parser* parser) {
     AstNode* node = nodeCreate(NODE_BOLD);
 
-    pExpect(parser, TOKEN_BOLD);
+    Token start = pExpect(parser, TOKEN_BOLD);
 
-    while (pPeek(parser).type != TOKEN_BOLD && !pAtEnd(parser)) {
+    while (pPeek(parser).type != TOKEN_BOLD && !pAtEnd(parser) && !parser->interrupted) {
         AstNode* child = parseInline(parser);
 
         if (child == NULL)
@@ -336,7 +340,7 @@ AstNode* parseBold(Parser* parser) {
     }
 
     if (pAtEnd(parser)) {
-        printf("Unterminated bold expression\n");
+        marktexLog(LOG_WARNING, "Unterminated bold expression starting at line %i.", start.location.line);
         return NULL;
     }
 

@@ -56,10 +56,12 @@ struct AstNode {
 
 typedef struct {
     Lexer* lexer;
-    int pos;
+    size_t pos;
+    bool interrupted;
 } Parser;
 
 Token pExpect(Parser* parser, TokenType type);
+void parserInterrupt(Parser* parser);
 
 AstNode* nodeCreate(NodeType type);
 void destroyNode(AstNode* node);
@@ -74,6 +76,7 @@ void trimTextLeft(AstNode* node);
 void trimTextRight(AstNode* node);
 
 AstNode* parseDocument(Parser* parser);
+
 AstNode* parseHeader(Parser* parser);
 AstNode* parseEnvironment(Parser* parser);
 AstNode* parseParagraph(Parser* parser);

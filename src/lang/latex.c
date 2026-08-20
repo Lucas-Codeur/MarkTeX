@@ -107,6 +107,8 @@ void printNode(AstNode* node, OutputBuffer* buffer) {
         }
 
         outputBufferWriteStr(buffer, "}");
+    } else if(node->type == NODE_NEWLINE) {
+        outputBufferWriteStr(buffer, "\n");
     }
 }
 

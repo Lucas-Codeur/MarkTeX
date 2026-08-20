@@ -137,7 +137,7 @@ bool compile(const char* inputPath, const char* outputPath, char* template) {
         free(input);
         fclose(outFile);
 
-        marktexLog(LOG_ERROR, "Could not find {{MARKTEX_CONTENT}} placeholder in the template, aborting");
+        marktexLog(LOG_ERROR, "Could not find {{MARKTEX_CONTENT}} placeholder in the template, aborting...");
         return EXIT_FAILURE;
     }
 
@@ -154,10 +154,19 @@ bool compile(const char* inputPath, const char* outputPath, char* template) {
     Lexer lexer = newLexer(input);
     tokenize(&lexer);
 
-    marktexLog(LOG_VERBOSE_ONLY, "Generated %i tokens from input", lexer.tokens.size);
+    marktexLog(LOG_VERBOSE_ONLY, "Generated %i tokens from input.", lexer.tokens.size);
 
-    Parser parser = {.lexer = &lexer, .pos = 0};
+    Parser parser = {.lexer = &lexer, .pos = 0, .interrupted = false};
     AstNode* parsed = parseDocument(&parser);
+
+    if(parser.interrupted || parsed == NULL) {
+        marktexLog(LOG_ERROR, "Parser error encountered while processing %s, please check your syntax.", inputPath);
+        destroyLexer(&lexer);
+        destroyNode(parsed);
+        free(input);
+        fclose(outFile);
+        return EXIT_FAILURE;
+    }
 
     OutputBuffer outBuffer = newOutputBuffer(4096);
 
@@ -323,6 +332,6 @@ int main(int argc, char** argv) {
         compile(options.input, options.output, template);
     }
 
-    if(template != DEFAULT_TEMPLATE) free(template);
+    if(options.template != DEFAULT_TEMPLATE) free(template);
     return status;
 }

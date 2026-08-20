@@ -1,5 +1,5 @@
 ### Linux Only (for now)
-For now this tool is reliant on Linux only functions, thus making it incompatible with Windows. I will add Windows support in the upcoming month. If you are on Windows and interested in the tool, please open an issue and I'll focus on it.
+For now this tool is reliant on Linux only functions, thus making it incompatible with Windows. I will add Windows support in the upcoming months. If you are on Windows and interested in the tool, please let me know by opening an issue and I'll focus on it.
 
 ## MarkTeX
 

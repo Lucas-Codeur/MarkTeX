@@ -12,6 +12,24 @@ See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LIC
 
 static string_view EMPTY_STR_VIEW = {0};
 
+const char* tokenTypeName(TokenType type) {
+    switch (type) {
+        case TOKEN_SOF: return "START_OF_FILE";
+        case TOKEN_IDENTIFIER: return "IDENTIFIER";
+        case TOKEN_TEXT: return "TEXT";
+        case TOKEN_NEWLINE: return "NEWLINE";
+        case TOKEN_HASH: return "HASH";
+        case TOKEN_DASH: return "DASH";
+        case TOKEN_AT: return "AT";
+        case TOKEN_DOUBLE_AT: return "DOUBLE_AT";
+        case TOKEN_BOLD: return "BOLD_BLOCK";
+        case TOKEN_ITALIC: return "ITALIC_BLOCK";
+        case TOKEN_INVALID: return "INVALID";
+        case TOKEN_EOF: return "END_OF_FILE";
+        default: return "UNKNOWN";
+    }
+}
+
 TokenList newTokenList() {
     TokenList list;
     list.capacity = INITIAL_TOKEN_CAPACITY;

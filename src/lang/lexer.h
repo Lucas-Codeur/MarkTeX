@@ -16,6 +16,7 @@ typedef struct {
     int offset;
 } SourceLocation;
 
+// Remember to add the type name in tokenTypeName();
 typedef enum {
     TOKEN_SOF, // Start Of File (so previous doesn't break)
 
@@ -31,8 +32,11 @@ typedef enum {
     TOKEN_BOLD,
     TOKEN_ITALIC,
 
+    TOKEN_INVALID,
     TOKEN_EOF, // End Of File
 } TokenType;
+
+const char* tokenTypeName(TokenType type);
 
 typedef struct {
     TokenType type;
