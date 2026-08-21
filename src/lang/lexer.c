@@ -258,4 +258,16 @@ void tokenize(Lexer* lexer) {
         }
         lAdvance(lexer);
     }
+
+    if(textLength != 0) {
+        END_TEXT;
+    }
+
+    SourceLocation endLocation = {
+        .column = lexer->column + 1,
+        .line = lexer->line,
+        .offset = lexer->pos + 1,
+    };
+    string_view view = {.data = NULL, .length = 0};
+    addToken(&lexer->tokens, TOKEN_EOF, view, endLocation);
 }

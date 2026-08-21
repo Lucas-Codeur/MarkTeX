@@ -11,8 +11,7 @@ See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LIC
 
 #define INITIAL_NODE_CAPACITY 4
 
-static Token EMPTY_TOKEN = {.type = TOKEN_EOF};
-static Token INVALID_TOKEN = {.type = TOKEN_EOF};
+static Token INVALID_TOKEN = {.type = TOKEN_INVALID};
 
 NodeList newNodeList() {
     NodeList list;
@@ -98,23 +97,29 @@ AstNode* nodeCreate(NodeType type) {
 
 Token pPeek(Parser* parser) {
     if (pAtEnd(parser))
-        return EMPTY_TOKEN;
+        return parser->lexer->tokens.data[parser->lexer->tokens.size - 1];
     return parser->lexer->tokens.data[parser->pos];
 }
 
 Token pPeekNext(Parser* parser) {
-    if (parser->pos + 1 >= parser->lexer->tokens.size)
-        return EMPTY_TOKEN;
+    if (parser->pos + 1 >= parser->lexer->tokens.size) {
+        return parser->lexer->tokens.data[parser->lexer->tokens.size - 1];
+    }
     return parser->lexer->tokens.data[parser->pos + 1];
 }
 
 Token pAdvance(Parser* parser) {
     if (pAtEnd(parser))
-        return EMPTY_TOKEN;
+        return parser->lexer->tokens.data[parser->lexer->tokens.size - 1];
     return parser->lexer->tokens.data[parser->pos++];
 }
 
-bool pAtEnd(Parser* parser) { return parser->pos >= parser->lexer->tokens.size; }
+bool pAtEnd(Parser* parser) {
+    if(parser->pos < parser->lexer->tokens.size) {
+        return parser->lexer->tokens.data[parser->pos].type == TOKEN_EOF;
+    }
+    return true; 
+}
 
 void trimTextLeft(AstNode* node) {
     if (node->type == NODE_TEXT) {
@@ -174,6 +179,12 @@ AstNode* parseDocument(Parser* parser) {
         if (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1) {
             nodeListAdd(&document->children, parseList(parser));
             continue;
+        } else if(pPeek(parser).type == TOKEN_DASH) {
+            AstNode* node = nodeCreate(NODE_TEXT);
+            node->text = pPeek(parser).text;
+            nodeListAdd(&document->children, node);
+            pAdvance(parser);
+            continue;
         }
 
         if (pPeek(parser).type == TOKEN_NEWLINE) {
@@ -182,7 +193,6 @@ AstNode* parseDocument(Parser* parser) {
             pAdvance(parser);
             continue;
         }
-
 
         marktexLog(LOG_WARNING, "Parser error: found token (%s) at line %i.", tokenTypeName(pPeek(parser).type), pPeek(parser).location.line);
         parserInterrupt(parser);
@@ -249,7 +259,8 @@ AstNode* parseEnvironment(Parser* parser) {
 
     pExpect(parser, TOKEN_NEWLINE);
 
-    while (pPeek(parser).type != TOKEN_DOUBLE_AT && !parser->interrupted) {
+    while (pPeek(parser).type != TOKEN_DOUBLE_AT && 
+           !parser->interrupted) {
         if (pPeek(parser).type == TOKEN_DASH) {
             nodeListAdd(&environment->children, parseList(parser));
         } else {
@@ -265,7 +276,10 @@ AstNode* parseEnvironment(Parser* parser) {
 AstNode* parseParagraph(Parser* parser) {
     AstNode* paragraph = nodeCreate(NODE_PARAGRAPH);
 
-    while (pPeek(parser).type != TOKEN_NEWLINE && pPeek(parser).type != TOKEN_DOUBLE_AT && !parser->interrupted) {
+    while (pPeek(parser).type != TOKEN_NEWLINE && 
+           pPeek(parser).type != TOKEN_DOUBLE_AT &&
+           !pAtEnd(parser) &&
+           !parser->interrupted) {
         AstNode* child = parseInline(parser);
 
         if (child == NULL) {
@@ -283,6 +297,15 @@ AstNode* parseParagraph(Parser* parser) {
 }
 
 AstNode* parseList(Parser* parser) {
+    // Should not process two consecutive dash as a list
+    if(pPeek(parser).type == TOKEN_DASH && pPeekNext(parser).type == TOKEN_DASH) {
+        AstNode* node = nodeCreate(NODE_TEXT);
+
+        node->text = pPeek(parser).text;
+        pAdvance(parser);
+        return node;
+    }
+
     AstNode* list = nodeCreate(NODE_LIST);
 
     while (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1 && !parser->interrupted) {
@@ -292,6 +315,7 @@ AstNode* parseList(Parser* parser) {
 
         if (paragraph == NULL) {
             destroyNode(paragraph);
+            destroyNode(list);
             return NULL;
         }
 
