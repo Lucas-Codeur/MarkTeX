@@ -27,22 +27,22 @@ void printHeader(AstNode* node, OutputBuffer* buffer) {
         break;
     }
 
-    outputBufferWriteFormat(buffer, "\\%s{", command);
+    obWriteFormat(buffer, "\\%s{", command);
 
     for (size_t i = 0; i < node->children.size; i++) {
         printNode(node->children.data[i], buffer);
     }
 
-    outputBufferWriteStr(buffer, "}\n");
+    obWriteStr(buffer, "}\n");
 }
 
 void printEnvironment(AstNode* node, OutputBuffer* buffer) {
     if (node == NULL || node->type != NODE_ENVIRONMENT)
         return;
 
-    outputBufferWriteStr(buffer, "\\begin{");
-    outputBufferWriteStrView(buffer, &node->environment.name);
-    outputBufferWriteStr(buffer, "}");
+    obWriteStr(buffer, "\\begin{");
+    obWriteStrView(buffer, &node->environment.name);
+    obWriteStr(buffer, "}");
 
     NodeList* title = &node->environment.titleNodes;
     if (title->size > 0) {
@@ -50,46 +50,46 @@ void printEnvironment(AstNode* node, OutputBuffer* buffer) {
         trim(&text);
 
         if (text.length != 0) {
-            outputBufferWriteStr(buffer, "[");
+            obWriteStr(buffer, "[");
 
             for (size_t i = 0; i < title->size; i++) {
                 printNode(title->data[i], buffer);
             }
 
-            outputBufferWriteStr(buffer, "]");
+            obWriteStr(buffer, "]");
         }
     }
 
-    outputBufferWriteStr(buffer, "\n");
+    obWriteStr(buffer, "\n");
 
     for (size_t i = 0; i < node->children.size; i++) {
         printNode(node->children.data[i], buffer);
     }
 
-    outputBufferWriteStr(buffer, "\\end{");
-    outputBufferWriteStrView(buffer, &node->environment.name);
-    outputBufferWriteStr(buffer, "}");
+    obWriteStr(buffer, "\\end{");
+    obWriteStrView(buffer, &node->environment.name);
+    obWriteStr(buffer, "}");
 }
 
 void printList(AstNode* node, OutputBuffer* buffer) {
     if (node->type != NODE_LIST || node->children.size == 0)
         return;
-    outputBufferWriteStr(buffer, "\\begin{itemize}\n");
+    obWriteStr(buffer, "\\begin{itemize}\n");
 
     for (size_t i = 0; i < node->children.size; i++) {
-        outputBufferWriteStr(buffer, "\\item ");
+        obWriteStr(buffer, "\\item ");
         printNode(node->children.data[i], buffer);
         // '\n' character is inserted by the printNode paragraph
     }
 
-    outputBufferWriteStr(buffer, "\\end{itemize}\n");
+    obWriteStr(buffer, "\\end{itemize}\n");
 }
 
 void printNode(AstNode* node, OutputBuffer* buffer) {
     if (node->type == NODE_HEADER) {
         printHeader(node, buffer);
     } else if (node->type == NODE_TEXT) {
-        outputBufferWriteStrView(buffer, &node->text);
+        obWriteStrView(buffer, &node->text);
     } else if (node->type == NODE_ENVIRONMENT) {
         printEnvironment(node, buffer);
     } else if (node->type == NODE_LIST) {
@@ -98,17 +98,17 @@ void printNode(AstNode* node, OutputBuffer* buffer) {
         for (size_t i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], buffer);
         }
-        outputBufferWriteStr(buffer, "\n");
+        obWriteStr(buffer, "\n");
     } else if (node->type == NODE_BOLD) {
-        outputBufferWriteStr(buffer, "\\textbf{");
+        obWriteStr(buffer, "\\textbf{");
 
         for (size_t i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], buffer);
         }
 
-        outputBufferWriteStr(buffer, "}");
+        obWriteStr(buffer, "}");
     } else if(node->type == NODE_NEWLINE) {
-        outputBufferWriteStr(buffer, "\n");
+        obWriteStr(buffer, "\n");
     }
 }
 

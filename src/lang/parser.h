@@ -71,6 +71,7 @@ Token pPeekNext(Parser* parser);
 
 Token pAdvance(Parser* parser);
 bool pAtEnd(Parser* parser);
+bool pAtLineStart(Parser* parser);
 
 void trimTextLeft(AstNode* node);
 void trimTextRight(AstNode* node);
@@ -78,7 +79,7 @@ void trimTextRight(AstNode* node);
 AstNode* parseDocument(Parser* parser);
 
 AstNode* parseHeader(Parser* parser);
-AstNode* parseEnvironment(Parser* parser);
+AstNode* parseEnvironment(Parser* parser, int depth);
 AstNode* parseParagraph(Parser* parser);
 AstNode* parseList(Parser* parser);
 AstNode* parseInline(Parser* parser);

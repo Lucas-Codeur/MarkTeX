@@ -38,22 +38,22 @@ OutputBuffer newOutputBuffer(size_t capacity) {
     return buffer;
 }
 
-void outputBufferWrite(OutputBuffer* buffer, const char* data, size_t size) {
+void obWrite(OutputBuffer* buffer, const char* data, size_t size) {
     if(!data) return;
 
-    if(!outputBufferEnsureCapacity(buffer, buffer->pos + size)) return;
+    if(!obEnsureCapacity(buffer, buffer->pos + size)) return;
 
     memcpy(buffer->data + buffer->pos, data, size);
     buffer->pos += size;
 }
 
-void outputBufferWriteStr(OutputBuffer* buffer, const char* str) {
+void obWriteStr(OutputBuffer* buffer, const char* str) {
     if (!str) return;
 
-    outputBufferWrite(buffer, str, strlen(str) * sizeof(char));
+    obWrite(buffer, str, strlen(str) * sizeof(char));
 }
 
-void outputBufferWriteFormat(
+void obWriteFormat(
     OutputBuffer* buffer,
     const char* format,
     ...
@@ -80,7 +80,7 @@ void outputBufferWriteFormat(
         return;
     }
 
-    if(!outputBufferEnsureCapacity(buffer, (size_t)required)) return;
+    if(!obEnsureCapacity(buffer, (size_t)required)) return;
 
     vsnprintf(
         buffer->data + buffer->pos,
@@ -94,11 +94,11 @@ void outputBufferWriteFormat(
     va_end(args);
 }
 
-void outputBufferWriteStrView(OutputBuffer* buffer, string_view* view) {
-    outputBufferWrite(buffer, view->data, view->length * sizeof(char));
+void obWriteStrView(OutputBuffer* buffer, string_view* view) {
+    obWrite(buffer, view->data, view->length * sizeof(char));
 }
 
-void outputBufferFlush(OutputBuffer* buffer, FILE* file) {
+void obFlush(OutputBuffer* buffer, FILE* file) {
     fwrite(buffer->data, buffer->pos, 1, file);
 }
 
@@ -109,7 +109,7 @@ void deleteOutputBuffer(OutputBuffer* buffer) {
     buffer->capacity = 0;
 }
 
-bool outputBufferEnsureCapacity(OutputBuffer* buffer, size_t required)
+bool obEnsureCapacity(OutputBuffer* buffer, size_t required)
 {
     if (required <= buffer->capacity)
         return true;

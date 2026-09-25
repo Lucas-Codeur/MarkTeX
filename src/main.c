@@ -176,7 +176,7 @@ bool compile(const char* inputPath, const char* outputPath, char* template) {
 
     marktexLog(LOG_VERBOSE_ONLY, "LaTeX generated");
 
-    outputBufferFlush(&outBuffer, outFile);
+    obFlush(&outBuffer, outFile);
 
     destroyLexer(&lexer);
     destroyNode(parsed);

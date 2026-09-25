@@ -121,6 +121,10 @@ bool pAtEnd(Parser* parser) {
     return true; 
 }
 
+bool pAtLineStart(Parser* parser) {
+    return pPeek(parser).location.column == 1;
+}
+
 void trimTextLeft(AstNode* node) {
     if (node->type == NODE_TEXT) {
         while (node->text.length > 0 && (node->text.data[0] == ' ' || node->text.data[0] == '\t' ||
@@ -161,13 +165,13 @@ AstNode* parseDocument(Parser* parser) {
     AstNode* document = nodeCreate(NODE_DOCUMENT);
 
     while (!pAtEnd(parser) && !parser->interrupted) {
-        if (pPeek(parser).type == TOKEN_HASH && pPeek(parser).location.column == 1) {
+        if (pPeek(parser).type == TOKEN_HASH && pAtLineStart(parser)) {
             nodeListAdd(&document->children, parseHeader(parser));
             continue;
         }
 
         if (pPeek(parser).type == TOKEN_AT) {
-            nodeListAdd(&document->children, parseEnvironment(parser));
+            nodeListAdd(&document->children, parseEnvironment(parser, 0));
             continue;
         }
 
@@ -176,7 +180,7 @@ AstNode* parseDocument(Parser* parser) {
             continue;
         }
 
-        if (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1) {
+        if (pPeek(parser).type == TOKEN_DASH && pAtLineStart(parser)) {
             nodeListAdd(&document->children, parseList(parser));
             continue;
         } else if(pPeek(parser).type == TOKEN_DASH) {
@@ -194,7 +198,7 @@ AstNode* parseDocument(Parser* parser) {
             continue;
         }
 
-        marktexLog(LOG_WARNING, "Parser error: found token (%s) at line %i.", tokenTypeName(pPeek(parser).type), pPeek(parser).location.line);
+        marktexLog(LOG_WARNING, "Found unexpected token (%s) at line %i while trying to parse a root document. Stopping parsing", tokenTypeName(pPeek(parser).type), pPeek(parser).location.line);
         parserInterrupt(parser);
     }
 
@@ -236,8 +240,13 @@ AstNode* parseHeader(Parser* parser) {
     return header;
 }
 
-AstNode* parseEnvironment(Parser* parser) {
+AstNode* parseEnvironment(Parser* parser, int depth) {
     pExpect(parser, TOKEN_AT);
+
+    if(depth > 10) {
+        marktexLog(LOG_WARNING, "Tried to parse an environment nested more than 10 times, this is possibly an internal bug.");
+        parserInterrupt(parser);
+    }
 
     Token name = pExpect(parser, TOKEN_IDENTIFIER);
     trim(&name.text);
@@ -261,7 +270,9 @@ AstNode* parseEnvironment(Parser* parser) {
 
     while (pPeek(parser).type != TOKEN_DOUBLE_AT && 
            !parser->interrupted) {
-        if (pPeek(parser).type == TOKEN_DASH) {
+        if(pPeek(parser).type == TOKEN_AT && pAtLineStart(parser)) {
+            nodeListAdd(&environment->children, parseEnvironment(parser, depth+1));
+        } else if (pPeek(parser).type == TOKEN_DASH) {
             nodeListAdd(&environment->children, parseList(parser));
         } else {
             nodeListAdd(&environment->children, parseParagraph(parser));
@@ -308,7 +319,7 @@ AstNode* parseList(Parser* parser) {
 
     AstNode* list = nodeCreate(NODE_LIST);
 
-    while (pPeek(parser).type == TOKEN_DASH && pPeek(parser).location.column == 1 && !parser->interrupted) {
+    while (pPeek(parser).type == TOKEN_DASH && pAtLineStart(parser) && !parser->interrupted) {
         pAdvance(parser);
 
         AstNode* paragraph = parseParagraph(parser);

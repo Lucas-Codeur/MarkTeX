@@ -21,26 +21,6 @@ typedef struct {
 
 void trim(string_view* view);
 
-// Output buffer
-
-typedef struct {
-    char* data;
-    size_t pos;
-    size_t capacity;
-} OutputBuffer;
-
-OutputBuffer newOutputBuffer(size_t capacity);
-
-void outputBufferWrite(OutputBuffer* buffer, const char* data, size_t size);
-void outputBufferWriteStr(OutputBuffer* buffer, const char* data);
-void outputBufferWriteFormat(OutputBuffer* buffer, const char* data, ...);
-void outputBufferWriteStrView(OutputBuffer* buffer, string_view* view);
-
-bool outputBufferEnsureCapacity(OutputBuffer* buffer, size_t required);
-void outputBufferFlush(OutputBuffer* buffer, FILE* file);
-
-void deleteOutputBuffer(OutputBuffer* buffer);
-
 // Time
 
 int64_t timestamp_us();
@@ -61,5 +41,25 @@ void setLogVerbose(bool log);
 // File utils
 
 char* readFile(const char* path);
+
+// Output buffer
+
+typedef struct {
+    char* data;
+    size_t pos;
+    size_t capacity;
+} OutputBuffer;
+
+OutputBuffer newOutputBuffer(size_t capacity);
+
+void obWrite(OutputBuffer* buffer, const char* data, size_t size);
+void obWriteStr(OutputBuffer* buffer, const char* data);
+void obWriteFormat(OutputBuffer* buffer, const char* data, ...);
+void obWriteStrView(OutputBuffer* buffer, string_view* view);
+
+bool obEnsureCapacity(OutputBuffer* buffer, size_t required);
+void obFlush(OutputBuffer* buffer, FILE* file);
+
+void deleteOutputBuffer(OutputBuffer* buffer);
 
 #endif
