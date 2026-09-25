@@ -223,13 +223,23 @@ void tokenize(Lexer* lexer) {
             lAdvance(lexer);
             lAdvance(lexer);
             continue;
-        }
-
+        } 
+        
         // Parse italic text
-        if (lPeek(lexer) == '_' && lPeekNext(lexer) == '_') {
+        if (lPeek(lexer) == '/' && lPeekNext(lexer) == '/') {
             END_TEXT;
 
             addToken(&lexer->tokens, TOKEN_ITALIC, EMPTY_STR_VIEW, srcLoc);
+            lAdvance(lexer);
+            lAdvance(lexer);
+            continue;
+        }
+
+        // Parse underline text
+        if (lPeek(lexer) == '_' && lPeekNext(lexer) == '_') {
+            END_TEXT;
+
+            addToken(&lexer->tokens, TOKEN_UNDERLINE, EMPTY_STR_VIEW, srcLoc);
             lAdvance(lexer);
             lAdvance(lexer);
             continue;

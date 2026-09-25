@@ -99,8 +99,19 @@ void printNode(AstNode* node, OutputBuffer* buffer) {
             printNode(node->children.data[i], buffer);
         }
         obWriteStr(buffer, "\n");
-    } else if (node->type == NODE_BOLD) {
-        obWriteStr(buffer, "\\textbf{");
+    } else if (node->type == NODE_FORMATTING) {
+        switch (node->formatting.format) {
+            case FORMAT_BOLD:
+                obWriteStr(buffer, "\\textbf{");
+                break;
+            case FORMAT_ITALIC:
+                obWriteStr(buffer, "\\textit{");
+                break;
+            case FORMAT_UNDERLINE:
+                obWriteStr(buffer, "\\underline{");
+                break;
+        }
+
 
         for (size_t i = 0; i < node->children.size; i++) {
             printNode(node->children.data[i], buffer);

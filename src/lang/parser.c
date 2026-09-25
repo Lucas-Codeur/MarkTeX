@@ -161,6 +161,10 @@ void trimNodeListText(NodeList* list) {
     trimTextRight(list->data[list->size - 1]);
 }
 
+/*
+* Actual parsing process
+*/
+
 AstNode* parseDocument(Parser* parser) {
     AstNode* document = nodeCreate(NODE_DOCUMENT);
 
@@ -172,11 +176,6 @@ AstNode* parseDocument(Parser* parser) {
 
         if (pPeek(parser).type == TOKEN_AT) {
             nodeListAdd(&document->children, parseEnvironment(parser, 0));
-            continue;
-        }
-
-        if (pPeek(parser).type == TOKEN_TEXT) {
-            nodeListAdd(&document->children, parseParagraph(parser));
             continue;
         }
 
@@ -198,8 +197,8 @@ AstNode* parseDocument(Parser* parser) {
             continue;
         }
 
-        marktexLog(LOG_WARNING, "Found unexpected token (%s) at line %i while trying to parse a root document. Stopping parsing", tokenTypeName(pPeek(parser).type), pPeek(parser).location.line);
-        parserInterrupt(parser);
+        // Remaining content should be treated as a paragraph.
+        nodeListAdd(&document->children, parseParagraph(parser));
     }
 
     return document;
@@ -352,7 +351,11 @@ AstNode* parseInline(Parser* parser) {
     }
 
     if (pPeek(parser).type == TOKEN_BOLD) {
-        return parseBold(parser);
+        return parseFormatting(parser, TOKEN_BOLD, FORMAT_BOLD);
+    } else if (pPeek(parser).type == TOKEN_ITALIC) {
+        return parseFormatting(parser, TOKEN_ITALIC, FORMAT_ITALIC);
+    } else if (pPeek(parser).type == TOKEN_UNDERLINE) {
+        return parseFormatting(parser, TOKEN_UNDERLINE, FORMAT_UNDERLINE);
     }
 
     marktexLog(LOG_WARNING, "Wrong token (%s) in inline content at line %i.", tokenTypeName(token.type), token.location.line);
@@ -360,12 +363,13 @@ AstNode* parseInline(Parser* parser) {
     return NULL;
 }
 
-AstNode* parseBold(Parser* parser) {
-    AstNode* node = nodeCreate(NODE_BOLD);
+AstNode* parseFormatting(Parser* parser, TokenType token, TextFormat format) {
+    AstNode* node = nodeCreate(NODE_FORMATTING);
+    node->formatting.format = format;
 
-    Token start = pExpect(parser, TOKEN_BOLD);
+    Token start = pExpect(parser, token);
 
-    while (pPeek(parser).type != TOKEN_BOLD && !pAtEnd(parser) && !parser->interrupted) {
+    while (pPeek(parser).type != token && !pAtEnd(parser) && !parser->interrupted) {
         AstNode* child = parseInline(parser);
 
         if (child == NULL)
@@ -375,10 +379,10 @@ AstNode* parseBold(Parser* parser) {
     }
 
     if (pAtEnd(parser)) {
-        marktexLog(LOG_WARNING, "Unterminated bold expression starting at line %i.", start.location.line);
+        marktexLog(LOG_WARNING, "Unterminated formatting expression starting at line %i.", start.location.line);
         return NULL;
     }
 
-    pExpect(parser, TOKEN_BOLD);
+    pExpect(parser, token);
     return node;
 }

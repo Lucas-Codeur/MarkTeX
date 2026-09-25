@@ -31,6 +31,7 @@ typedef enum {
 
     TOKEN_BOLD,
     TOKEN_ITALIC,
+    TOKEN_UNDERLINE,
 
     TOKEN_INVALID,
     TOKEN_EOF, // End Of File

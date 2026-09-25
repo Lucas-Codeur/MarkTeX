@@ -9,6 +9,12 @@ See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LIC
 #include "lexer.h"
 #include <stddef.h>
 
+typedef enum {
+    FORMAT_BOLD,
+    FORMAT_ITALIC,
+    FORMAT_UNDERLINE
+} TextFormat;
+
 typedef struct AstNode AstNode;
 
 typedef enum {
@@ -20,8 +26,7 @@ typedef enum {
     NODE_LIST,
 
     NODE_TEXT,
-    NODE_BOLD,
-    NODE_ITALIC,
+    NODE_FORMATTING,
 
     NODE_NEWLINE,
     NODE_EOF
@@ -47,6 +52,10 @@ struct AstNode {
             string_view name;
             NodeList titleNodes;
         } environment;
+
+        struct {
+            TextFormat format;
+        } formatting;
     };
 
     string_view text;
@@ -84,6 +93,6 @@ AstNode* parseParagraph(Parser* parser);
 AstNode* parseList(Parser* parser);
 AstNode* parseInline(Parser* parser);
 
-AstNode* parseBold(Parser* parser);
+AstNode* parseFormatting(Parser* parser, TokenType token, TextFormat format);
 
 #endif

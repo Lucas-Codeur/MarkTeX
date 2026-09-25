@@ -109,8 +109,7 @@ void deleteOutputBuffer(OutputBuffer* buffer) {
     buffer->capacity = 0;
 }
 
-bool obEnsureCapacity(OutputBuffer* buffer, size_t required)
-{
+bool obEnsureCapacity(OutputBuffer* buffer, size_t required) {
     if (required <= buffer->capacity)
         return true;
 

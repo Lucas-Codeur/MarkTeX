@@ -29,7 +29,7 @@ Options:
 Work in progress. It will define document metadata like title, author and date.
 
 ### Environments
-I use a block system for environments. For now it doesn't support nested blocks (not tested so undefined behaviour) as they are intended for content organization and not math blocks.
+I use a block system for environments (alias to \begin{...}\end{...} to avoid repetition), and nested environments are supported too. 
 
 ```
 @<environment> <optional text>
@@ -58,7 +58,10 @@ Headers work just like they would in markdown. Just type between one and three '
 Headers with more than three '#' will be treated as a header 3.
 
 ### Formatting
-For now only bold formatting, like in markdown (**`**bold text**`**) is supported, italic and underlining are coming soon (or later).
+You can use the following inline blocks to format your text :
+- `**bold**` will appear as **bold**.
+- `//italic//` will appear as *italic*.
+- `__underlined__` will appear as <u>underlined</u>.
 
 ### Lists
 Lists work like in markdown.
