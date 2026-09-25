@@ -68,7 +68,7 @@ void printEnvironment(AstNode* node, OutputBuffer* buffer) {
 
     outputBufferWriteStr(buffer, "\\end{");
     outputBufferWriteStrView(buffer, &node->environment.name);
-    outputBufferWriteStr(buffer, "}\n\n");
+    outputBufferWriteStr(buffer, "}");
 }
 
 void printList(AstNode* node, OutputBuffer* buffer) {

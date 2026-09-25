@@ -1,13 +1,13 @@
 ### Linux Only (for now)
-For now this tool is reliant on Linux only functions, thus making it incompatible with Windows. I will add Windows support in the upcoming months. If you are on Windows and interested in the tool, please let me know by opening an issue and I'll focus on it.
+For now this tool is reliant on Linux only functions, thus making it incompatible with Windows. If you are on Windows and interested in the tool, please let me know by opening an issue and I'll focus on it.
 
 ## MarkTeX
 
-MarkTeX is a fast small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdow. I made this tool to speed up note taking for my upcoming physics degree (starting september 2026).
+MarkTeX is a fast small transpiler to process a custom syntax that would fit somewhere between LaTeX and markdown. I made this tool to speed up note taking for my degree.
 
 ## Early version Disclaimer
 
-This tool was designed for a personnal use, and it is in an early version. Hence you should not expect proper error handling, rigorous testing or fancy features and adaptability. I may or may not add them in the future, but if you want feel free to contribute (just please ask before adding features). All contributions are highly appreciated 😀.
+This tool was designed for a personnal use, and it is still in an early version. Hence you should not expect proper error handling, rigorous testing or fancy features and adaptability. I may or may not add them in the future, but if you want feel free to contribute (just please ask before adding features). All contributions are highly appreciated 😀.
 
 ## Command line arguments
 There are two required command line arguments, input and output and a few options. Using help with show you the message below.
@@ -29,7 +29,7 @@ Options:
 Work in progress. It will define document metadata like title, author and date.
 
 ### Environments
-I use a block system for environments. For now it doesn't support nested blocks (not tested so undefined behaviour) as they are intended for content organization and not math block.
+I use a block system for environments. For now it doesn't support nested blocks (not tested so undefined behaviour) as they are intended for content organization and not math blocks.
 
 ```
 @<environment> <optional text>
@@ -61,7 +61,7 @@ Headers with more than three '#' will be treated as a header 3.
 For now only bold formatting, like in markdown (**`**bold text**`**) is supported, italic and underlining are coming soon (or later).
 
 ### Lists
-Lists should work like in markdown.
+Lists work like in markdown.
 
 ```
 - Si et seulement si $\Re(z) = 0$, alors $z$ est imaginaire pur ($z \in \iR$).
