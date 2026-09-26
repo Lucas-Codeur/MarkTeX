@@ -3,12 +3,12 @@ This file is part of MarkTeX which is released under the MIT liscence.
 See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LICENSE for full license details.
 */
 
+#include "config/frontmatter.h"
 #include "lang/latex.h"
 #include "lang/lexer.h"
 #include "lang/parser.h"
 #include "utils.h"
 
-#include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>
@@ -127,6 +127,10 @@ bool compile(const char* inputPath, const char* outputPath, char* template) {
     }
 
     char* input = readFile(inputPath);
+
+    int_range frontmatter = getFrontmatterRange(input);
+    marktexLog(LOG_INFO, "Front matter : %i, %i", frontmatter.start, frontmatter.end);
+    
 
     marktexLog(LOG_VERBOSE_ONLY, "--- Compiling %s ---", inputPath);
 

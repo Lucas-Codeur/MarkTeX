@@ -14,7 +14,7 @@ See file LISCENCE or go to https://github.com/Lucas-Codeur/MarkTeX/blob/main/LIC
 static bool verbose = false;
 
 void setLogVerbose(bool log) {
-    verbose = true;
+    verbose = log;
 }
 
 OutputBuffer newOutputBuffer(size_t capacity) {
@@ -175,8 +175,8 @@ void trim(string_view* view) {
         view->length--;
     }
 
-    while (view->length > 0 && view->data[view->length - 1] == ' ' ||
-           view->data[view->length - 1] == '\t') {
+    while (view->length > 0 && (view->data[view->length - 1] == ' ' ||
+           view->data[view->length - 1] == '\t')) {
         view->length--;
     }
 }

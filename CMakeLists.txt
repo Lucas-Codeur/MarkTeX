@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(marktex VERSION 1.0 LANGUAGES C)
 
+add_subdirectory(libs/libyaml)
+
 # Embbed the default template
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/default.tex" TEMPLATE)
@@ -21,7 +23,12 @@ add_executable(marktex
     src/lang/parser.c
     src/lang/latex.c
     src/utils.c
+    src/config/frontmatter.c
     src/default_template.c
+)
+
+target_link_libraries(marktex PRIVATE
+    yaml
 )
 
 # Debug config
